@@ -31,70 +31,90 @@ let users = [
 ];
 
 server.post('/api/users', (req, res) => {
-    if (!req.body.name || !req.body.bio){
-        res.status(400).json({ errorMessage: "Please provide name and bio for the user" });
+    try {
+        if (!req.body.name || !req.body.bio){
+            res.status(400).json({ errorMessage: "Please provide name and bio for the user" });
+        }
+    
+        const newUser = {
+            id: shortid.generate(),
+            name: req.body.name,
+            bio: req.body.bio
+        };
+        users.push(newUser);
+    
+        res.status(201).json(newUser);
+    }catch{
+        res.status(500).json({ errorMessage: "There was an error while saving the user to the database" });
     }
-
-    const newUser = {
-        id: shortid.generate(),
-        name: req.body.name,
-        bio: req.body.bio
-    };
-    users.push(newUser);
-
-    res.status(201).json(newUser);
 });
 
 server.get('/api/users', (req, res) => {
-    res.status(200).json(users);
+    try {
+        res.status(200).json(users);
+    }catch {
+        res.status(500).json({ errorMessage: "The users information could not be retrieved" });
+    }
 });
 
 server.get('/api/users/:id', (req, res) => {
-    const id = req.params.id;
-    const user = users.find(usr => usr.id === id);
+    try {
+        const id = req.params.id;
+        const user = users.find(usr => usr.id === id);
 
-    if (!user){
-        res.status(404).json({ message: "The user with the specified ID does not exist" });
+        if (!user){
+            res.status(404).json({ message: "The user with the specified ID does not exist" });
+        }
+
+        res.status(200).json(user);
+    } catch {
+        res.status(500).json({ errorMessage: "The user information could not be retrieved" });
     }
-
-    res.status(200).json(user);
 });
 
 server.delete('/api/users/:id', (req, res) => {
-    const id = req.params.id;
-    const user = users.find(usr => usr.id === id);
+    try {
+        const id = req.params.id;
+        const user = users.find(usr => usr.id === id);
 
-    if (!user){
-        res.status(404).json({ message: "The user with the specified ID does not exist" });
+        if (!user){
+            res.status(404).json({ message: "The user with the specified ID does not exist" });
+        }
+
+        users = users.filter(usr => usr.id !== id);
+        res.status(200).json({ message: "User deleted", user });
+    } catch {
+        res.status(500).json({ errorMessage: "The user could not be removed" });
     }
-
-    users = users.filter(usr => usr.id !== id);
-    res.status(200).json({ message: "User deleted", user });
 });
 
 server.put('/api/users/:id', (req, res) => {
-    const id = req.params.id;
-    const user = users.find(usr => usr.id === id);
+    try {
+        const id = req.params.id;
+        const user = users.find(usr => usr.id === id);
 
-    if (!user){
-        res.status(404).json({ message: "The user with the specified ID does not exist" });
-    }else if (!req.body.name || !req.body.bio) {
-        res.status(400).json({ errorMessage: "Please provide name and bio for the user" });
-    }
-
-    users = users.map(usr => {
-        if (usr.id === id){
-            return {
-                id,
-                name: req.body.name,
-                bio: req.body.bio
-            }
-        }else {
-            return usr;
+        if (!user){
+            res.status(404).json({ message: "The user with the specified ID does not exist" });
+        }else if (!req.body.name || !req.body.bio) {
+            res.status(400).json({ errorMessage: "Please provide name and bio for the user" });
         }
-    });
 
-    res.status(200).json({ message: "User updated", user: { id, name: req.body.name, bio: req.body.bio } })
+        users = users.map(usr => {
+            if (usr.id === id){
+                return {
+                    id,
+                    name: req.body.name,
+                    bio: req.body.bio
+                }
+            }else {
+                return usr;
+            }
+        });
+
+        res.status(200).json({ message: "User updated", user: { id, name: req.body.name, bio: req.body.bio } })
+    } catch {
+        res.status(500).json({ errorMessage: "The user information could not be modified" });
+    }
 });
 
 const port = 8000;
