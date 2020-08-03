@@ -1,0 +1,14 @@
+.App {
+  text-align: center;
+}
+
+.error {
+  color: red;
+}
+
+.user {
+  border: 1px solid black;
+  margin: 15px auto;
+  padding: 10px 0;
+  width: 400px;
+}
